@@ -26,17 +26,6 @@
 
 @implementation DVSwitch
 
-- (instancetype)init
-{
-    self = [super init];
-    if (self) {
-        
-        [NSException raise:@"DVSwitchInitException" format:@"Init call is prohibited, use initWithStringsArray: method"];
-    }
-    
-    return self;
-}
-
 + (instancetype)switchWithStringsArray:(NSArray *)strings
 {
     // to do
@@ -46,7 +35,13 @@
 - (instancetype)initWithStringsArray:(NSArray *)strings
 {
     self = [super init];
-    
+    if (self) {
+        [self setupForSegments:strings];
+    }
+    return self;
+}
+
+- (void)setupForSegments:(NSArray *)strings {
     self.strings = strings;
     self.cornerRadius = 12.0f;
     self.sliderOffset = 1.0f;
@@ -69,7 +64,7 @@
         UILabel *label = [[UILabel alloc] init];
         label.tag = k;
         label.text = string;
-        label.font = self.font;
+        label.font = self.fontOutsideSlider;
         label.adjustsFontSizeToFitWidth = YES;
         label.adjustsLetterSpacingToFitWidth = YES;
         label.textAlignment = NSTextAlignmentCenter;
@@ -93,7 +88,7 @@
         
         UILabel *label = [[UILabel alloc] init];
         label.text = string;
-        label.font = self.font;
+        label.font = self.fontInsideSlider;
         label.adjustsFontSizeToFitWidth = YES;
         label.adjustsLetterSpacingToFitWidth = YES;
         label.textAlignment = NSTextAlignmentCenter;
@@ -102,10 +97,9 @@
         [self.onTopLabels addObject:label];
     }
     
-    UIPanGestureRecognizer *sliderRec = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(sliderMoved:)];
-    [self.sliderView addGestureRecognizer:sliderRec];
-    
-    return self;
+//Disabled not working well
+//    UIPanGestureRecognizer *sliderRec = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(sliderMoved:)];
+//    [self.sliderView addGestureRecognizer:sliderRec];
 }
 
 - (void)setPressedHandler:(void (^)(NSUInteger))handler
@@ -155,8 +149,10 @@
 
 - (void)layoutSubviews
 {
-    self.backgroundView.layer.cornerRadius = self.cornerRadius;
-    self.sliderView.layer.cornerRadius = self.cornerRadius - 1;
+    if (self.borderColor && self.borderWidth > 0) {
+        self.backgroundView.layer.borderColor = [self.borderColor CGColor];
+        self.backgroundView.layer.borderWidth = self.borderWidth;
+    }
     
     self.backgroundView.backgroundColor = self.backgroundColor;
     self.sliderView.backgroundColor = self.sliderColor;
@@ -164,7 +160,8 @@
     self.backgroundView.frame = [self convertRect:self.frame fromView:self.superview];
     
     self.backgroundView.layer.cornerRadius = self.cornerRadius;
-    self.sliderView.layer.cornerRadius = self.cornerRadius;
+    self.layer.cornerRadius = self.cornerRadius;
+    self.clipsToBounds = YES;
     
     CGFloat sliderWidth = self.frame.size.width / [self.strings count];
     
@@ -173,16 +170,16 @@
     for (int i = 0; i < [self.labels count]; i++) {
         
         UILabel *label = self.labels[i];
-        label.frame = CGRectMake(i * sliderWidth, 0, sliderWidth, self.frame.size.height);
-        label.font = self.font;
+        label.frame = CGRectMake(i * sliderWidth+self.labelMargin, 0, sliderWidth-self.labelMargin*2, self.frame.size.height);
+        label.font = self.fontOutsideSlider;
         label.textColor = self.labelTextColorOutsideSlider;
     }
     
     for (int j = 0; j < [self.onTopLabels count]; j++) {
         
         UILabel *label = self.onTopLabels[j];
-        label.frame = CGRectMake([self.sliderView convertPoint:CGPointMake(j * sliderWidth, 0) fromView:self.backgroundView].x, - self.sliderOffset, sliderWidth, self.frame.size.height);
-        label.font = self.font;
+        label.frame = CGRectMake([self.sliderView convertPoint:CGPointMake(j * sliderWidth, 0) fromView:self.backgroundView].x+self.labelMargin, - self.sliderOffset, sliderWidth-self.labelMargin*2, self.frame.size.height);
+        label.font = self.fontInsideSlider;
         label.textColor = self.labelTextColorInsideSlider;
     }
 }

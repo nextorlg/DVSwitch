@@ -12,11 +12,15 @@
 
 @property (strong, nonatomic) UIColor *backgroundColor; // defaults to gray
 @property (strong, nonatomic) UIColor *sliderColor; // defaults to white
+@property (strong, nonatomic) UIColor *borderColor; // defaults to none
+@property (nonatomic) CGFloat borderWidth; // defaults to 0
 @property (strong, nonatomic) UIColor *labelTextColorInsideSlider; // defaults to black
 @property (strong, nonatomic) UIColor *labelTextColorOutsideSlider; // defaults to white
-@property (strong, nonatomic) UIFont *font;
+@property (strong, nonatomic) UIFont *fontInsideSlider;
+@property (strong, nonatomic) UIFont *fontOutsideSlider;
 @property (nonatomic) CGFloat cornerRadius; // defaults to 12
 @property (nonatomic) CGFloat sliderOffset; // slider offset from background, top, bottom, left, right
+@property (nonatomic) CGFloat labelMargin;
 
 + (instancetype)switchWithStringsArray:(NSArray *)strings;
 - (instancetype)initWithStringsArray:(NSArray *)strings;
@@ -33,4 +37,5 @@
 
 - (void)selectIndex:(NSInteger)index animated:(BOOL)animated; // sets the index without calling the handler block
 
+- (void)setupForSegments:(NSArray *)strings;
 @end
